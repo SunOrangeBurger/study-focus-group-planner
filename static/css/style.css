@@ -1,0 +1,47 @@
+:root {
+    --bg-color: #ffffff; --card-bg: #f9f9f9; --text-color: #121212;
+    --accent-color: #7c4dff; --border-color: #e0e0e0; --nav-bg: rgba(255,255,255,0.8);
+}
+[data-theme="dark"] {
+    --bg-color: #000000; --card-bg: #0a0a0a; --text-color: #e0e0e0;
+    --accent-color: #bb86fc; --border-color: #1a1a1a; --nav-bg: rgba(0,0,0,0.8);
+}
+body { background: var(--bg-color); color: var(--text-color); font-family: 'Inter', sans-serif; margin: 0; transition: 0.3s; }
+nav { display: flex; justify-content: space-between; padding: 15px 40px; background: var(--nav-bg); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); sticky: top; z-index: 100; }
+.container { max-width: 1100px; margin: auto; padding: 40px 20px; }
+.card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
+input, select, textarea { background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+.btn-main { 
+    background: var(--accent-color); 
+    color: #000000 !important; /* Forces black text on the bright purple/pink accent background */
+    border: none; 
+    padding: 12px 24px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    width: 100%;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-main:hover {
+    filter: brightness(1.2);
+}
+.progress-container { background: #1a1a1a; border-radius: 10px; height: 8px; width: 100%; margin: 8px 0; overflow: hidden; }
+.progress-bar { background: var(--accent-color); height: 100%; transition: width 0.5s ease; }
+#notification-toast { position: fixed; bottom: 20px; right: 20px; background: var(--accent-color); color: black; padding: 15px 25px; border-radius: 12px; display: none; z-index: 1000; animation: slideIn 0.3s ease; font-weight: bold; }
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.nav-item { 
+    color: var(--text-color) !important; 
+    text-decoration: none; 
+    padding: 8px 15px; 
+    border-radius: 8px; 
+    background: transparent; /* Ensures it doesn't default to a white background */
+    border: 1px solid var(--border-color); /* Makes the button outline visible */
+    display: inline-block;
+}
+
+.nav-item:hover { 
+    background: rgba(124, 77, 255, 0.2); /* Tint background on hover */
+    color: var(--accent-color) !important;
+}

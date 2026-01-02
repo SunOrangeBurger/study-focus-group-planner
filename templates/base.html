@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+    <title>StudySync</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');</script>
+</head>
+<body>
+    <nav>
+        <!-- Logo wrapped in a link to Dashboard -->
+        <a href="/" style="text-decoration: none;">
+            <div style="font-size: 1.5rem; font-weight: 900; color: var(--accent-color); cursor: pointer;">StudySync</div>
+        </a>
+        
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="/" class="nav-item">Dashboard</a>
+            {% if session.user_id %}<a href="/logout" class="nav-item" style="color: #ff5555;">Logout</a>{% endif %}
+            <button onclick="toggleTheme()" style="background:none; border:1px solid var(--border-color); color:var(--text-color); cursor:pointer; padding:5px 10px; border-radius:50%;">🌓</button>
+        </div>
+    </nav>
+    <div class="container">{% block content %}{% endblock %}</div>
+    <div id="notification-toast"></div>
+    <script>
+        function toggleTheme() {
+            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('theme', t);
+        }
+        const socket = io();
+        const gid = window.location.pathname.split('/').pop();
+        if (gid && window.location.pathname.includes('/group/')) socket.emit('join', {group_id: gid});
+        socket.on('notification', d => {
+            const t = document.getElementById('notification-toast');
+            t.innerText = d.msg; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 4000);
+        });
+    </script>
+</body>
+    <footer style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 0.8rem; color: #888;">
+        made by the powers that be
+    </footer>
+</html>

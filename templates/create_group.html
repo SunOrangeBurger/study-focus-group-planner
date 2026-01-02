@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="max-width: 700px; margin: auto;">
+    <h1>Create Study Group</h1>
+    <input type="text" id="gname" placeholder="Group Name" style="font-size: 1.5rem; margin-bottom: 20px;">
+    
+    <div id="subs"></div>
+    
+    <!-- Styled as a clear action button -->
+    <button onclick="addSub()" class="nav-item" style="width: 100%; margin: 10px 0; cursor: pointer; text-align: center;">
+        + Add Subject
+    </button>
+    
+    <button onclick="save()" class="btn-main" style="margin-top: 20px;">
+        Create Group
+    </button>
+</div>
+
+<script>
+    function addSub() {
+        const id = Date.now();
+        const h = `<div class="card sub" id="${id}" style="border-left: 4px solid var(--accent-color); margin-top: 20px;">
+            <input type="text" class="s-name" placeholder="Subject Name (e.g., Mathematics)">
+            <div class="units"></div>
+            <button onclick="addU(${id})" class="nav-item" style="font-size: 0.8rem; cursor: pointer; margin-top: 10px;">
+                + Add Unit
+            </button>
+        </div>`;
+        document.getElementById('subs').insertAdjacentHTML('beforeend', h);
+    }
+
+    function addU(sid) {
+        const c = document.getElementById(sid).querySelector('.units');
+        const h = `<div class="u-box" style="margin: 15px 0 10px 20px; padding: 15px; background: rgba(124, 77, 255, 0.05); border-radius: 8px; border: 1px solid var(--border-color);">
+            <input type="text" class="u-name" placeholder="Unit Title (e.g., Calculus)">
+            <input type="text" class="u-concepts" placeholder="Concepts (comma separated: Limits, Derivatives, Integrals)">
+        </div>`;
+        c.insertAdjacentHTML('beforeend', h);
+    }
+
+    function save() {
+        const syllabus = [];
+        const groupName = document.getElementById('gname').value;
+        
+        if(!groupName) { alert("Please enter a group name"); return; }
+
+        document.querySelectorAll('.sub').forEach(s => {
+            const units = [];
+            s.querySelectorAll('.u-box').forEach((u, i) => {
+                const conceptVal = u.querySelector('.u-concepts').value;
+                units.push({
+                    unit_number: i+1, 
+                    unit_name: u.querySelector('.u-name').value, 
+                    concepts: conceptVal ? conceptVal.split(',').map(x => x.trim()) : []
+                });
+            });
+            syllabus.push({subject_name: s.querySelector('.s-name').value, units: units});
+        });
+
+        fetch('/create-group', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name: groupName, syllabus: syllabus})
+        }).then(() => window.location.href = '/');
+    }
+</script>
+{% endblock %}

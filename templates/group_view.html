@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <h1>{{ group.name }} <span style="font-size: 1rem; opacity: 0.5;">#{{ group.invite_code }}</span></h1>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+    <div>
+        <h3>Syllabus</h3>
+        {% for sub in group.syllabus %}
+            <div class="card">
+                <h2 style="color: var(--accent-color);">{{ sub.subject_name }}</h2>
+                {% for unit in sub.units %}
+                    <div style="margin-bottom: 20px;">
+                        <strong>Unit {{ unit.unit_number }}: {{ unit.unit_name }}</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                            {% for concept in unit.concepts %}
+                                {% set c_key = sub.subject_name ~ "-" ~ concept %}
+                                <label class="nav-item" style="border: 1px solid var(--border-color); display: flex; gap: 8px; font-size: 0.8rem; cursor: pointer;">
+                                    <input type="checkbox" class="prog-check" data-group="{{ group._id }}" data-concept="{{ c_key }}" {% if completed_dict[c_key] %}checked{% endif %}>
+                                    {{ concept }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div>
+        <div class="card" style="border-left: 5px solid gold;">
+            <h3>Tests 📅</h3>
+            {% for t in group.tests %}
+                <div style="padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <strong>{{ t.name }}</strong> ({{ t.type }})<br>
+                    <small>{{ t.date }} | {{ t.portion }}</small>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="card">
+            <h3>Peer Progress 🏆</h3>
+            {% for p in peers_progress %}
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                        <span>{{ p.username }}</span><span>{{ p.percentage }}%</span>
+                    </div>
+                    <div class="progress-container"><div class="progress-bar" style="width: {{ p.percentage }}%"></div></div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if is_owner %}
+        <div class="card" style="border: 1px dashed var(--accent-color);">
+            <h4>Add Test</h4>
+            <form action="/add-test" method="POST">
+                <input type="hidden" name="group_id" value="{{ group._id }}">
+                <input type="text" name="test_name" placeholder="Test Name" required>
+                <input type="date" name="test_date" required>
+                <input type="text" name="portion" placeholder="Portion">
+                <select name="test_type"><option>Theory</option><option>Practical</option><option>Quiz</option></select>
+                <button type="submit" class="btn-main">Schedule</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.prog-check').forEach(cb => {
+        cb.onchange = () => {
+            fetch('/update-progress', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({group_id: cb.dataset.group, concept: cb.dataset.concept, status: cb.checked})
+            });
+        }
+    });
+</script>
+{% endblock %}

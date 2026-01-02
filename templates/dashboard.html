@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h1>Hi, {{ user.username }}</h1>
+    <a href="/create-group" class="btn-main" style="text-decoration: none;">+ Create Group</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+    <div class="card">
+        <h3>Join a Group</h3>
+        <form action="/join-group" method="POST">
+            <input type="text" name="code" placeholder="Invite Code" required>
+            <button type="submit" class="btn-main" style="width: 100%;">Join</button>
+        </form>
+    </div>
+
+    <div>
+        <h3>My Study Groups</h3>
+        {% for group in groups %}
+        <a href="/group/{{ group._id }}" style="text-decoration: none; color: inherit;">
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>{{ group.name }}</strong><br>
+                    <small style="opacity: 0.6;">Code: {{ group.invite_code }}</small>
+                </div>
+                <span>➔</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
