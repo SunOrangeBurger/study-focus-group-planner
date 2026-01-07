@@ -8,19 +8,17 @@
 </head>
 <body>
     <nav>
-        <!-- Logo wrapped in a link to Dashboard -->
-        <a href="/" style="text-decoration: none;">
-            <div style="font-size: 1.5rem; font-weight: 900; color: var(--accent-color); cursor: pointer;">StudySync</div>
-        </a>
-        
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <a href="/" class="nav-item">Dashboard</a>
-            {% if session.user_id %}<a href="/logout" class="nav-item" style="color: #ff5555;">Logout</a>{% endif %}
-            <button onclick="toggleTheme()" style="background:none; border:1px solid var(--border-color); color:var(--text-color); cursor:pointer; padding:5px 10px; border-radius:50%;">🌓</button>
+        <a href="/" style="text-decoration: none; font-size: 1.5rem; font-weight: bold; color: var(--text-color);">StudySync</a>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            {% if user %}
+                <span style="color: var(--text-color);">{{ user.username }}</span>
+                <a href="/logout" class="nav-item" title="Logout" style="padding: 8px 12px; font-size: 1.2rem;">⊗</a>
+            {% endif %}
         </div>
     </nav>
     <div class="container">{% block content %}{% endblock %}</div>
     <div id="notification-toast"></div>
+
     <script>
         function toggleTheme() {
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -32,8 +30,35 @@
         if (gid && window.location.pathname.includes('/group/')) socket.emit('join', {group_id: gid});
         socket.on('notification', d => {
             const t = document.getElementById('notification-toast');
-            t.innerText = d.msg; t.style.display = 'block';
+            // Support legacy 'msg' and new {username, topic}
+            t.innerText = d.msg ? d.msg : `🔥 ${d.username} finished: ${d.topic}!`;
+            t.style.display = 'block';
             setTimeout(() => t.style.display = 'none', 4000);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // If we landed on a group page, show loader (entering a room)
+            if (window.location.pathname.startsWith('/group/')) {
+                showLoader(5000);
+            }
+
+            // Intercept Create Group anchor clicks to show loader before navigation
+            document.querySelectorAll('a[href="/create-group"]').forEach(a => {
+                a.addEventListener('click', e => {
+                    e.preventDefault();
+                    showLoader(5000);
+                    setTimeout(() => window.location.href = a.href, 5000);
+                });
+            });
+
+            // Intercept Join Group forms to show loader before submit
+            document.querySelectorAll('form[action="/join-group"]').forEach(f => {
+                f.addEventListener('submit', e => {
+                    e.preventDefault();
+                    showLoader(5000);
+                    setTimeout(() => f.submit(), 5000);
+                });
+            });
         });
     </script>
 </body>

@@ -7,41 +7,304 @@
     --accent-color: #bb86fc; --border-color: #1a1a1a; --nav-bg: rgba(0,0,0,0.8);
 }
 body { background: var(--bg-color); color: var(--text-color); font-family: 'Inter', sans-serif; margin: 0; transition: 0.3s; }
-nav { display: flex; justify-content: space-between; padding: 15px 40px; background: var(--nav-bg); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); sticky: top; z-index: 100; }
+nav { display: flex; justify-content: space-between; padding: 15px 40px; background: var(--nav-bg); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); sticky: top; z-index: 100; align-items: center; }
+nav a { cursor: pointer; }
 .container { max-width: 1100px; margin: auto; padding: 40px 20px; }
-.card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
-input, select, textarea { background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+.card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+input, select, textarea { background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 10px 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; font-size: 0.95rem; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.1); }
+
 .btn-main { 
-    background: var(--accent-color); 
-    color: #000000 !important; /* Forces black text on the bright purple/pink accent background */
+    background: #7c4dff; 
+    color: #ffffff !important;
     border: none; 
-    padding: 12px 24px; 
+    padding: 10px 20px; 
     border-radius: 8px; 
     cursor: pointer; 
-    font-weight: bold; 
+    font-weight: 600; 
+    font-size: 0.95rem;
     width: 100%;
     display: inline-block;
     text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-main:hover {
-    filter: brightness(1.2);
+    background: #5a2d9f;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(90, 45, 159, 0.5);
 }
-.progress-container { background: #1a1a1a; border-radius: 10px; height: 8px; width: 100%; margin: 8px 0; overflow: hidden; }
+
+.btn-main:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(90, 45, 159, 0.3);
+}
+
+.progress-container { background: var(--border-color); border-radius: 10px; height: 8px; width: 100%; margin: 8px 0; overflow: hidden; }
 .progress-bar { background: var(--accent-color); height: 100%; transition: width 0.5s ease; }
-#notification-toast { position: fixed; bottom: 20px; right: 20px; background: var(--accent-color); color: black; padding: 15px 25px; border-radius: 12px; display: none; z-index: 1000; animation: slideIn 0.3s ease; font-weight: bold; }
+#notification-toast { position: fixed; bottom: 20px; right: 20px; background: var(--accent-color); color: white; padding: 15px 25px; border-radius: 12px; display: none; z-index: 1000; animation: slideIn 0.3s ease; font-weight: bold; }
 @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
 .nav-item { 
-    color: var(--text-color) !important; 
+    color: #ffffff !important; 
     text-decoration: none; 
     padding: 8px 15px; 
     border-radius: 8px; 
-    background: transparent; /* Ensures it doesn't default to a white background */
-    border: 1px solid var(--border-color); /* Makes the button outline visible */
+    background: #7c4dff;
+    border: 1px solid #7c4dff;
     display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
 }
 
 .nav-item:hover { 
-    background: rgba(124, 77, 255, 0.2); /* Tint background on hover */
-    color: var(--accent-color) !important;
+    background: #5a2d9f;
+    color: #ffffff !important;
+    border-color: #5a2d9f;
+    box-shadow: 0 4px 12px rgba(90, 45, 159, 0.5);
 }
+
+.critical { border: 2px solid #ff4d4d; background: #fff5f5; }
+.high { border: 2px solid #ffa500; background: #fffaf0; }
+.revision-old { border: 2px solid #4da3ff; background: #f5faff; }
+.revision-recent { border: 2px solid #4dff88; background: #f5fff8; }
+
+.countdown-card {
+    background: linear-gradient(135deg, var(--accent-color) 0%, rgba(124, 77, 255, 0.8) 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 24px rgba(124, 77, 255, 0.3);
+}
+
+.countdown-timer {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 15px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.countdown-label {
+    font-size: 0.9rem;
+    opacity: 0.95;
+    margin-bottom: 20px;
+}
+
+.priority-topics {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.priority-topic-item {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+
+.priority-topic-item:hover {
+    background: rgba(0, 0, 0, 0.3);
+    transform: translateX(4px);
+}
+
+.priority-topic-item input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: white;
+    width: 18px;
+    height: 18px;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+}
+
+.priority-topic-item span {
+    flex: 1;
+    color: white;
+    margin: 0;
+}
+
+@keyframes fadeOut {
+    from { 
+        opacity: 1; 
+        transform: translateX(0); 
+    }
+    to { 
+        opacity: 0; 
+        transform: translateX(-10px); 
+    }
+}
+
+/* Neon checkbox (adapted, purple theme) — From Uiverse.io by 00Kubi */
+.neon-checkbox {
+  --primary: var(--accent-color);
+  --primary-dark: #5823b3; /* slightly darker purple */
+  --primary-light: rgba(124,77,255,0.25);
+  --size: 26px;
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.neon-checkbox input { display: none; }
+
+.neon-checkbox__frame { position: relative; width: 100%; height: 100%; }
+
+.neon-checkbox__box {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.12);
+  border-radius: 6px;
+  border: 2px solid var(--primary-dark);
+  transition: all 0.36s ease;
+  box-shadow: 0 4px 10px rgba(92,62,180,0.08) inset;
+}
+
+.neon-checkbox__check-container { position: absolute; inset: 2px; display: flex; align-items: center; justify-content: center; }
+
+.neon-checkbox__check {
+  width: 70%; height: 70%;
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  transform-origin: center;
+  transition: all 0.36s cubic-bezier(0.16,1,0.3,1);
+}
+
+.neon-checkbox__glow {
+  position: absolute; inset: -4px; border-radius: 8px;
+  background: var(--primary); opacity: 0; filter: blur(8px); transform: scale(1.05);
+  transition: all 0.36s ease;
+}
+
+/* Particle/animation rules for neon-checkbox (purple theme) */
+.neon-checkbox__particles span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  box-shadow: 0 0 6px var(--primary);
+}
+
+.neon-checkbox__rings {
+  position: absolute;
+  inset: -20px;
+  pointer-events: none;
+}
+.neon-checkbox__rings .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--primary);
+  opacity: 0;
+  transform: scale(0);
+}
+
+.neon-checkbox__sparks span {
+  position: absolute;
+  width: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--primary), transparent);
+  opacity: 0;
+}
+
+/* Checked-state triggers for effects */
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__particles span {
+  animation: particleExplosion 0.6s ease-out forwards;
+}
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__rings .ring {
+  animation: ringPulse 0.6s ease-out forwards;
+}
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__sparks span {
+  animation: sparkFlash 0.6s ease-out forwards;
+}
+
+/* Animations */
+@keyframes particleExplosion {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--x, 20px)), calc(-50% + var(--y, 20px))) scale(0); opacity: 0; }
+}
+
+@keyframes ringPulse {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes sparkFlash {
+  0% { transform: rotate(var(--r, 0deg)) translateX(0) scale(1); opacity: 1; }
+  100% { transform: rotate(var(--r, 0deg)) translateX(30px) scale(0); opacity: 0; }
+}
+
+/* Particle positions (var overrides used by animation) */
+.neon-checkbox__particles span:nth-child(1) { --x: 25px; --y: -25px; }
+.neon-checkbox__particles span:nth-child(2) { --x: -25px; --y: -25px; }
+.neon-checkbox__particles span:nth-child(3) { --x: 25px; --y: 25px; }
+.neon-checkbox__particles span:nth-child(4) { --x: -25px; --y: 25px; }
+.neon-checkbox__particles span:nth-child(5) { --x: 35px; --y: 0px; }
+.neon-checkbox__particles span:nth-child(6) { --x: -35px; --y: 0px; }
+.neon-checkbox__particles span:nth-child(7) { --x: 0px; --y: 35px; }
+.neon-checkbox__particles span:nth-child(8) { --x: 0px; --y: -35px; }
+
+/* Spark rotations */
+.neon-checkbox__sparks span:nth-child(1) { --r: 0deg; top: 50%; left: 50%; }
+.neon-checkbox__sparks span:nth-child(2) { --r: 90deg; top: 50%; left: 50%; }
+.neon-checkbox__sparks span:nth-child(3) { --r: 180deg; top: 50%; left: 50%; }
+.neon-checkbox__sparks span:nth-child(4) { --r: 270deg; top: 50%; left: 50%; }
+
+.neon-checkbox__borders { position: absolute; inset: 0; border-radius: 6px; overflow: hidden; pointer-events: none; }
+.neon-checkbox__borders span { position: absolute; width: 30px; height: 2px; background: var(--primary); opacity: 0; }
+
+/* Hover state */
+.neon-checkbox:hover .neon-checkbox__box { border-color: var(--primary); transform: scale(1.03); }
+
+/* Checked state */
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__box {
+  border-color: var(--primary); background: rgba(124,77,255,0.08);
+}
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__check {
+  stroke-dashoffset: 0; transform: scale(1.08);
+}
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__glow {
+  opacity: 0.22;
+}
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__borders span { opacity: 1; }
+
+/* Small layout helpers */
+.concept-text { margin-left: 10px; display: inline-block; vertical-align: middle; font-size: 0.95rem; }
+.priority-topic-item .neon-checkbox { margin-right: 10px; }
+
+/* Loader overlay */
+#false-loader {
+	position: fixed;
+	inset: 0;
+	background: rgba(8, 6, 10, 0.78);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 2200;
+}
+
+/* removed loader styles and keyframes (was the Uiverse loader) */

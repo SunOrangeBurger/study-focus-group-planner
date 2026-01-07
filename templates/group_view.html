@@ -4,70 +4,555 @@
     <h1>{{ group.name }} <span style="font-size: 1rem; opacity: 0.5;">#{{ group.invite_code }}</span></h1>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-    <div>
-        <h3>Syllabus</h3>
-        {% for sub in group.syllabus %}
-            <div class="card">
-                <h2 style="color: var(--accent-color);">{{ sub.subject_name }}</h2>
-                {% for unit in sub.units %}
-                    <div style="margin-bottom: 20px;">
-                        <strong>Unit {{ unit.unit_number }}: {{ unit.unit_name }}</strong>
-                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-                            {% for concept in unit.concepts %}
-                                {% set c_key = sub.subject_name ~ "-" ~ concept %}
-                                <label class="nav-item" style="border: 1px solid var(--border-color); display: flex; gap: 8px; font-size: 0.8rem; cursor: pointer;">
-                                    <input type="checkbox" class="prog-check" data-group="{{ group._id }}" data-concept="{{ c_key }}" {% if completed_dict[c_key] %}checked{% endif %}>
-                                    {{ concept }}
-                                </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endfor %}
-    </div>
-
-    <div>
-        <div class="card" style="border-left: 5px solid gold;">
-            <h3>Tests 📅</h3>
-            {% for t in group.tests %}
-                <div style="padding: 10px 0; border-bottom: 1px solid var(--border-color);">
-                    <strong>{{ t.name }}</strong> ({{ t.type }})<br>
-                    <small>{{ t.date }} | {{ t.portion }}</small>
-                </div>
-            {% endfor %}
-        </div>
-
-        <div class="card">
-            <h3>Peer Progress 🏆</h3>
-            {% for p in peers_progress %}
-                <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-                        <span>{{ p.username }}</span><span>{{ p.percentage }}%</span>
-                    </div>
-                    <div class="progress-container"><div class="progress-bar" style="width: {{ p.percentage }}%"></div></div>
-                </div>
-            {% endfor %}
-        </div>
-
-        {% if is_owner %}
-        <div class="card" style="border: 1px dashed var(--accent-color);">
-            <h4>Add Test</h4>
-            <form action="/add-test" method="POST">
-                <input type="hidden" name="group_id" value="{{ group._id }}">
-                <input type="text" name="test_name" placeholder="Test Name" required>
-                <input type="date" name="test_date" required>
-                <input type="text" name="portion" placeholder="Portion">
-                <select name="test_type"><option>Theory</option><option>Practical</option><option>Quiz</option></select>
-                <button type="submit" class="btn-main">Schedule</button>
-            </form>
-        </div>
-        {% endif %}
+<!-- COUNTDOWN WIDGET -->
+<div class="countdown-card" id="countdown-widget" style="display: none;">
+    <div class="countdown-label">Upcoming Exam</div>
+    <strong id="exam-name" style="font-size: 1.3rem;"></strong>
+    <div class="countdown-timer" id="countdown-timer">-- d -- h -- m -- s</div>
+    <div class="countdown-label" id="countdown-status"></div>
+    <div class="priority-topics">
+        <div style="font-weight: 600; margin-bottom: 12px;">Topics to Cover (Priority):</div>
+        <div id="priority-list"></div>
     </div>
 </div>
 
+<!-- TAB NAVIGATION -->
+<div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color);">
+    <button class="tab-btn active" data-tab="syllabus" style="background:#7c4dff;color:#000;border-radius:8px;padding:8px 14px;border:none;">Syllabus</button>
+    <button class="tab-btn" data-tab="progress" style="background:#7c4dff;color:#000;border-radius:8px;padding:8px 14px;border:none;">Progress</button>
+    <button class="tab-btn" data-tab="tests" style="background:#7c4dff;color:#000;border-radius:8px;padding:8px 14px;border:none;">Tests</button>
+    <button class="tab-btn" data-tab="resources" style="background:#7c4dff;color:#000;border-radius:8px;padding:8px 14px;border:none;">Resources</button>
+</div>
+
+<!-- TAB 1: SYLLABUS -->
+<div id="syllabus" class="tab-content active">
+    <h3>Syllabus Progress</h3>
+    {% for sub in group.syllabus %}
+        <div class="card">
+            <h2 style="color: var(--accent-color);">{{ sub.subject_name }}</h2>
+            {% for unit in sub.units %}
+                <div style="margin-bottom: 20px;">
+                    <strong>{{ unit.unit_name }}</strong>
+                    <div class="topic-list" style="margin-top:10px;">
+                        {% for concept in unit.concepts %}
+                            {% set c_key = sub.subject_name ~ "||" ~ unit.unit_name ~ "||" ~ concept %}
+                            <!-- replaced simple checkbox with neon checkbox -->
+                            <div class="topic-item">
+                                <label class="neon-checkbox">
+                                    <input type="checkbox" class="prog-check"
+                                           data-group="{{ group._id }}"
+                                           data-concept="{{ c_key }}"
+                                           {% if completed_dict[c_key] %}checked{% endif %} />
+                                    <div class="neon-checkbox__frame">
+                                        <div class="neon-checkbox__box"></div>
+                                        <div class="neon-checkbox__check-container">
+                                            <svg viewBox="0 0 24 24" class="neon-checkbox__check" aria-hidden="true"><path d="M3,12.5l7,7L21,5"></path></svg>
+                                        </div>
+                                        <div class="neon-checkbox__glow"></div>
+                                        <div class="neon-checkbox__borders"><span></span><span></span><span></span><span></span></div>
+
+                                        <!-- Added effects markup -->
+                                        <div class="neon-checkbox__particles">
+                                            <span></span><span></span><span></span><span></span>
+                                            <span></span><span></span><span></span><span></span>
+                                        </div>
+                                        <div class="neon-checkbox__rings">
+                                            <div class="ring"></div>
+                                            <div class="ring"></div>
+                                            <div class="ring"></div>
+                                        </div>
+                                        <div class="neon-checkbox__sparks">
+                                            <span></span><span></span><span></span><span></span>
+                                        </div>
+                                    </div>
+                                </label>
+                                <span class="concept-text">{{ concept }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>
+
+<!-- TAB 2: PROGRESS -->
+<div id="progress" class="tab-content">
+    <div class="card">
+        <h3>Leaderboard - Topics Completed</h3>
+        {% for p in peers_progress %}
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px;">
+                    <span><strong>#{{ loop.index }}</strong> {{ p.username }}</span>
+                    <span style="font-weight: bold;">{{ p.count }} / {{ total_concepts }}</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: {{ p.percentage }}%"></div>
+                </div>
+                <small style="color: var(--accent-color); font-weight: bold;">{{ p.percentage }}%</small>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- TAB 3: TESTS -->
+<div id="tests" class="tab-content">
+    <div class="card" style="border-left: 5px solid gold; margin-bottom: 30px;">
+        <h3>Upcoming Tests</h3>
+        {% if group.tests %}
+            {% set sorted_tests = group.tests | sort(attribute='date') %}
+            {% for t in sorted_tests %}
+                <div style="padding: 15px; margin-bottom: 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="font-size: 1.1rem;">{{ t.name }}</strong>
+                            {% if t.is_urgent %}<span class="badge-urgent">Exam Soon</span>{% endif %}<br>
+                            <small style="opacity: 0.7;">{{ t.date }} | {{ t.portion }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; opacity: 0.6;">No tests scheduled yet</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h3>Add Test</h3>
+        <form action="/add-test" method="POST">
+            <input type="hidden" name="group_id" value="{{ group._id }}">
+            <input type="text" name="test_name" placeholder="Test Name" required>
+            <input type="date" name="test_date" required>
+            <select name="test_type" required>
+                <option>Select Type</option>
+                <option>Quiz</option>
+                <option>Midterm</option>
+                <option>Final</option>
+            </select>
+            
+            <select id="subject-select" name="subject_name" required>
+                <option value="">Select Subject</option>
+                {% for sub in group.syllabus %}
+                    <option value="{{ sub.subject_name }}">{{ sub.subject_name }}</option>
+                {% endfor %}
+            </select>
+
+            <div id="syllabus-checklist" style="display: none; margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 15px; font-weight: 600; color: var(--text-color);">Topics to Cover:</label>
+                <div id="checklist-container" style="border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; max-height: 350px; overflow-y: auto; background: var(--card-bg);">
+                </div>
+            </div>
+
+            <input type="text" name="portion" placeholder="Additional portion details (optional)">
+            <button type="submit" class="btn-main" style="background: #7c4dff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; padding: 12px 24px; transition: all 0.3s;">Add Test</button>
+        </form>
+    </div>
+</div>
+
+<!-- TAB 4: RESOURCES -->
+<div id="resources" class="tab-content">
+    <div class="card" style="margin-bottom: 30px;">
+        <h3>Resources</h3>
+        {% if group.resources %}
+            {% for res in group.resources %}
+                <div style="padding: 15px; margin-bottom: 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid {% if res.type == 'Website' %}#4da3ff{% elif res.type == 'Document' %}#ffa500{% else %}#ff4d4d{% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <strong style="font-size: 1rem;">{{ res.title }}</strong>
+                            <span style="background: rgba(124, 77, 255, 0.2); color: var(--accent-color); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px;">{{ res.type }}</span><br>
+                            <small style="opacity: 0.7; display: block; margin-top: 5px;">{{ res.description }}</small>
+                            <a href="{{ res.link }}" target="_blank" style="color: var(--accent-color); text-decoration: none; font-size: 0.9rem; margin-top: 8px; display: inline-block;">Open Resource →</a>
+                        </div>
+                        {% if res.added_by != user.username %}
+                            <small style="opacity: 0.6;">by {{ res.added_by }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; opacity: 0.6; padding: 20px;">No resources added yet</p>
+        {% endif %}
+    </div>
+
+    {% if is_owner and group.pending_resources %}
+    <div class="card" style="border-left: 5px solid #ffa500; margin-bottom: 30px;">
+        <h3>Pending Approvals</h3>
+        {% for res in group.pending_resources %}
+            <div style="padding: 15px; margin-bottom: 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <strong>{{ res.title }}</strong>
+                        <span style="background: rgba(255, 165, 0, 0.2); color: #ffa500; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px;">{{ res.type }}</span><br>
+                        <small style="opacity: 0.7; display: block; margin-top: 5px;">{{ res.description }}</small>
+                        <small style="opacity: 0.6;">Submitted by {{ res.added_by }}</small>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="approveResource('{{ group._id }}', '{{ res._id }}')" class="btn-main" style="width: auto; padding: 10px 20px; background: #7c4dff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">Approve</button>
+                        <button onclick="rejectResource('{{ group._id }}', '{{ res._id }}')" style="width: auto; padding: 10px 20px; background: transparent; color: white; border: 2px solid #7c4dff; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">Reject</button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <h3>Add Resource</h3>
+        <form action="/add-resource" method="POST">
+            <input type="hidden" name="group_id" value="{{ group._id }}">
+            <input type="text" name="title" placeholder="Resource Title" required>
+            <textarea name="description" placeholder="Brief description (optional)" style="resize: vertical; min-height: 60px;"></textarea>
+            <select name="type" required>
+                <option value="">Select Resource Type</option>
+                <option value="Website">Website</option>
+                <option value="Document">Document</option>
+                <option value="YouTube Video">YouTube Video</option>
+            </select>
+            <input type="url" name="link" placeholder="Resource Link/URL" required>
+            <button type="submit" class="btn-main" style="background: #7c4dff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; padding: 12px 24px; transition: all 0.3s;">Submit for Approval</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .tab-btn {
+        background: transparent;
+        color: var(--text-color);
+        border: none;
+        padding: 12px 20px;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 500;
+        border-bottom: 3px solid transparent;
+        transition: 0.3s;
+    }
+    
+    .tab-btn:hover {
+        color: var(--accent-color);
+    }
+    
+    .tab-btn.active {
+        color: var(--accent-color);
+        border-bottom-color: var(--accent-color);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .concept-chip {
+        background: #7c4dff; /* purple */
+        color: #000; /* black text for contrast */
+        border: none;
+        padding: 8px 14px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .concept-chip input[type="checkbox"] { transform: scale(1.05); margin-right: 6px; }
+    .concept-chip:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(124,77,255,0.25);
+        background: #5a2d9f;
+        color: #fff;
+    }
+    /* keep priority classes but ensure they don't conflict badly */
+    .critical { box-shadow: 0 0 0 3px rgba(255,77,77,0.06); }
+    .high { box-shadow: 0 0 0 3px rgba(255,165,0,0.06); }
+    .revision-old { box-shadow: 0 0 0 3px rgba(77,163,255,0.06); }
+    .revision-recent { box-shadow: 0 0 0 3px rgba(77,255,136,0.06); }
+
+    #checklist-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .checklist-unit {
+        border-left: 3px solid var(--accent-color);
+        padding-left: 12px;
+        margin-bottom: 8px;
+    }
+
+    .checklist-unit-title {
+        font-weight: 600;
+        color: var(--accent-color);
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        opacity: 0.9;
+    }
+
+    .checklist-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: 0.2s;
+        gap: 10px;
+    }
+
+    .checklist-item:hover {
+        border-color: var(--accent-color);
+        background: rgba(124, 77, 255, 0.05);
+    }
+
+    .checklist-item input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        cursor: pointer;
+        accent-color: var(--accent-color);
+    }
+
+    .checklist-item label {
+        margin: 0;
+        cursor: pointer;
+        flex: 1;
+        font-size: 0.9rem;
+    }
+
+    .countdown-card {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 20px;
+        background: var(--card-bg);
+        margin-bottom: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .countdown-label {
+        font-size: 0.9rem;
+        color: var(--text-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        opacity: 0.8;
+    }
+
+    .countdown-timer {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--accent-color);
+    }
+
+    .priority-topic-item {
+        font-size: 0.85rem;
+        color: var(--text-color);
+        margin-left: 10px;
+        position: relative;
+        padding-left: 15px;
+    }
+
+    .priority-topic-item:before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: var(--accent-color);
+        font-weight: bold;
+    }
+
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(-10px); }
+    }
+</style>
+
 <script>
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // build map of plain concept -> full key and client-side completed set
+    const syllabusData = {{ group.syllabus | tojson }};
+    const conceptToKey = {};
+    syllabusData.forEach(sub => {
+        (sub.units || []).forEach(unit => {
+            (unit.concepts || []).forEach(concept => {
+                // first match wins
+                if (!conceptToKey[concept]) conceptToKey[concept] = `${sub.subject_name}||${unit.unit_name}||${concept}`;
+            });
+        });
+    });
+
+    // client-side covered set (initialized from server-side completed_dict)
+    const clientCovered = new Set(Object.keys({{ completed_dict | tojson }} || {}));
+
+    // Countdown Widget with active-tab guard
+    function updateCountdown() {
+        // only show widget when user is on Syllabus or Tests tab
+        const active = document.querySelector('.tab-btn.active')?.dataset.tab;
+        const widget = document.getElementById('countdown-widget');
+        if (!active || (active !== 'syllabus' && active !== 'tests')) {
+            widget.style.display = 'none';
+            return;
+        }
+
+        const tests = {{ group.tests | tojson }};
+        const now = new Date();
+        let nextTest = null;
+        let minDays = Infinity;
+
+        tests.forEach(t => {
+            const testDate = new Date(t.date);
+            const daysUntil = Math.ceil((testDate - now) / (1000 * 60 * 60 * 24));
+            if (daysUntil >= 0 && daysUntil < minDays) {
+                minDays = daysUntil;
+                nextTest = t;
+            }
+        });
+
+        if (nextTest && minDays <= 7) {
+            const testDate = new Date(nextTest.date);
+            testDate.setHours(8, 0, 0, 0); // Set to 8 AM
+            const diff = testDate - now;
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('exam-name').textContent = nextTest.name;
+            document.getElementById('countdown-timer').textContent =
+                `${String(days).padStart(2, '0')}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+
+            if (days === 0 && hours === 0) {
+                document.getElementById('countdown-status').textContent = 'Exam in ' + minutes + ' minutes!';
+            } else if (days === 0) {
+                document.getElementById('countdown-status').textContent = 'Today at 8 AM!';
+            } else if (days === 1) {
+                document.getElementById('countdown-status').textContent = 'Tomorrow at 8 AM!';
+            } else {
+                document.getElementById('countdown-status').textContent = days + ' days away';
+            }
+
+            const priorityList = document.getElementById('priority-list');
+            priorityList.innerHTML = '';
+            const urgentPlain = nextTest.covered_topics || [];
+
+            // map plain topics -> full keys and render those not in clientCovered
+            urgentPlain.forEach(plainTopic => {
+                const fullKey = conceptToKey[plainTopic] || plainTopic; // fallback if mapping not found
+                if (!clientCovered.has(fullKey)) {
+                    const itemWrapper = document.createElement('div');
+                    itemWrapper.className = 'priority-topic-item';
+                    // neon label
+                    const neon = document.createElement('label');
+                    neon.className = 'neon-checkbox';
+
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.className = 'countdown-topic-check';
+                    input.dataset.group = '{{ group._id }}';
+                    input.dataset.concept = fullKey;
+
+                    const frame = document.createElement('div');
+                    frame.className = 'neon-checkbox__frame';
+                    frame.innerHTML = `
+                        <div class="neon-checkbox__box"></div>
+                        <div class="neon-checkbox__check-container">
+                          <svg viewBox="0 0 24 24" class="neon-checkbox__check" aria-hidden="true"><path d="M3,12.5l7,7L21,5"></path></svg>
+                        </div>
+                        <div class="neon-checkbox__glow"></div>
+                        <div class="neon-checkbox__borders"><span></span><span></span><span></span><span></span></div>
+
+                        <div class="neon-checkbox__particles">
+                          <span></span><span></span><span></span><span></span>
+                          <span></span><span></span><span></span><span></span>
+                        </div>
+                        <div class="neon-checkbox__rings">
+                          <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+                        </div>
+                        <div class="neon-checkbox__sparks">
+                          <span></span><span></span><span></span><span></span>
+                        </div>
+                    `;
+
+                    neon.appendChild(input);
+                    neon.appendChild(frame);
+
+                    const text = document.createElement('span');
+                    text.textContent = plainTopic;
+                    text.style.marginLeft = '10px';
+
+                    itemWrapper.appendChild(neon);
+                    itemWrapper.appendChild(text);
+                    priorityList.appendChild(itemWrapper);
+                }
+            });
+
+            widget.style.display = 'block';
+        } else {
+            widget.style.display = 'none';
+        }
+    }
+
+    updateCountdown();
+    const countdownInterval = setInterval(updateCountdown, 1000);
+
+    // Countdown topic checkbox handler — update clientCovered and main checkbox, remove item after success
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('countdown-topic-check')) {
+            const checkbox = e.target;
+            const status = checkbox.checked;
+            const parentLabel = checkbox.parentElement;
+            const fullKey = checkbox.dataset.concept;
+
+            fetch('/update-progress', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    group_id: checkbox.dataset.group,
+                    concept: fullKey,
+                    status: status
+                })
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // update client-side covered set
+                    if (status) clientCovered.add(fullKey); else clientCovered.delete(fullKey);
+
+                    // update main syllabus checkbox (if present)
+                    const mainCheckbox = document.querySelector(`.prog-check[data-concept="${fullKey}"]`);
+                    if (mainCheckbox) mainCheckbox.checked = status;
+
+                    // animate removal and then remove from DOM (countdown will rebuild from clientCovered)
+                    parentLabel.style.animation = 'fadeOut 0.3s ease forwards';
+                    setTimeout(() => {
+                        parentLabel.remove();
+                        // no need to fetch server; clientCovered is authoritative for this view
+                    }, 300);
+                }
+            });
+        }
+    });
+
+    // Progress checkboxes
     document.querySelectorAll('.prog-check').forEach(cb => {
         cb.onchange = () => {
             fetch('/update-progress', {
@@ -77,5 +562,77 @@
             });
         }
     });
+
+    // Subject selection for tests
+    document.getElementById('subject-select').addEventListener('change', function() {
+        const subjectName = this.value;
+        const checklistContainer = document.getElementById('checklist-container');
+        const checklistDiv = document.getElementById('syllabus-checklist');
+        
+        checklistContainer.innerHTML = '';
+
+        if(subjectName) {
+            fetch('/get-concepts-by-subject', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({subject_name: subjectName, group_id: '{{ group._id }}'})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.units && data.units.length > 0) {
+                    data.units.forEach(unit => {
+                        const unitDiv = document.createElement('div');
+                        unitDiv.className = 'checklist-unit';
+                        
+                        const unitTitle = document.createElement('div');
+                        unitTitle.className = 'checklist-unit-title';
+                        unitTitle.textContent = unit.unit_name;
+                        unitDiv.appendChild(unitTitle);
+
+                        unit.concepts.forEach(concept => {
+                            const itemDiv = document.createElement('div');
+                            itemDiv.className = 'checklist-item';
+
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.name = 'covered_topics';
+                            checkbox.value = concept;
+                            checkbox.id = 'topic_' + concept.replace(/\s+/g, '_');
+
+                            const label = document.createElement('label');
+                            label.htmlFor = checkbox.id;
+                            label.textContent = concept;
+
+                            itemDiv.appendChild(checkbox);
+                            itemDiv.appendChild(label);
+                            unitDiv.appendChild(itemDiv);
+                        });
+
+                        checklistContainer.appendChild(unitDiv);
+                    });
+                }
+                checklistDiv.style.display = 'block';
+            });
+        } else {
+            checklistDiv.style.display = 'none';
+        }
+    });
+
+    // Resource approval functions
+    function approveResource(groupId, resourceId) {
+        fetch('/approve-resource', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({group_id: groupId, resource_id: resourceId})
+        }).then(() => location.reload());
+    }
+
+    function rejectResource(groupId, resourceId) {
+        fetch('/reject-resource', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({group_id: groupId, resource_id: resourceId})
+        }).then(() => location.reload());
+    }
 </script>
 {% endblock %}
