@@ -8,7 +8,7 @@ import secrets
 
 app = Flask(__name__)
 app.secret_key = "studysync_2026_key"
-app.config["MONGO_URI"] = "mongodb+srv://ArunHariharan:KkckVd2XpEKKQBqY@cluster0.o6vcaon.mongodb.net/studyapp"
+app.config["MONGO_URI"] = ""
 
 mongo = PyMongo(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
