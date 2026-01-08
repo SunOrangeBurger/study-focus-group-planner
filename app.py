@@ -8,14 +8,14 @@ import secrets
 
 app = Flask(__name__)
 app.secret_key = "studysync_2026_key"
-app.config["MONGO_URI"] = "mongodb://localhost:27017/studyGroupDB"
+app.config["MONGO_URI"] = "mongodb+srv://ArunHariharan:KkckVd2XpEKKQBqY@cluster0.o6vcaon.mongodb.net/studyapp"
 
 mongo = PyMongo(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # --- HELPERS ---
 def get_user():
-    if 'user_id' in session:
+    if 'user_id' in session and mongo.db is not None:
         return mongo.db.users.find_one({"_id": ObjectId(session['user_id'])})
     return None
 
