@@ -5,10 +5,14 @@ from bson.objectid import ObjectId
 from datetime import datetime, timedelta # NEW
 import bcrypt
 import secrets
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "studysync_2026_key"
-app.config["MONGO_URI"] = ""
+app.secret_key = os.getenv("SECRET_KEY", "studysync_2026_key")
+app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 
 mongo = PyMongo(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
