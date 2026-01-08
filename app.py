@@ -168,6 +168,67 @@ def group_view(group_id):
                            completed_dict=completed_dict,
                            priority_map=prio_map)
 
+# --- Create & Join Group Routes ---
+@app.route('/create-group', methods=['GET'])
+def create_group():
+    user = get_user()
+    if not user:
+        return redirect(url_for('login'))
+    return render_template('creategroup.html', user=user)
+
+@app.route('/create-group', methods=['POST'])
+def create_group_post():
+    user = get_user()
+    if not user:
+        return jsonify({'success': False}), 401
+
+    # Try JSON first, fallback to form data if needed
+    data = request.get_json(silent=True) or {}
+    if not data:
+        # fallback to form-encoded request (e.g., older clients)
+        name = request.form.get('name')
+        # attempt to parse 'syllabus' if provided as JSON string
+        syllabus = []
+        raw = request.form.get('syllabus')
+        if raw:
+            try:
+                import json
+                syllabus = json.loads(raw)
+            except Exception:
+                syllabus = []
+    else:
+        name = data.get('name')
+        syllabus = data.get('syllabus', [])
+
+    if not name:
+        return jsonify({'success': False, 'error': 'missing group name'}), 400
+
+    invite_code = secrets.token_hex(4)
+    group_obj = {
+        "name": name,
+        "owner_id": user['_id'],
+        "members": [user['_id']],
+        "invite_code": invite_code,
+        "syllabus": syllabus,
+        "tests": [],
+        "resources": [],
+        "pending_resources": []
+    }
+    gid = mongo.db.groups.insert_one(group_obj).inserted_id
+    return jsonify({"success": True, "group_id": str(gid)})
+
+@app.route('/join-group', methods=['POST'])
+def join_group():
+    user = get_user()
+    if not user:
+        return redirect(url_for('login'))
+    code = request.form.get('code')
+    group = mongo.db.groups.find_one({"invite_code": code})
+    if not group:
+        return redirect(url_for('index'))
+    mongo.db.groups.update_one({"_id": group['_id']}, {"$addToSet": {"members": user['_id']}})
+    return redirect(url_for('group_view', group_id=str(group['_id'])))
+
 @app.route('/update-progress', methods=['POST'])
 def update_progress():
     user = get_user()
@@ -299,4 +360,6 @@ def reject_resource():
     return jsonify({"success": True})
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    # Disable the Flask reloader to avoid double-binding the socket on Windows
+    # (the reloader spawns a child process which can cause the "address already in use" error)
+    socketio.run(app, debug=True, use_reloader=False)
