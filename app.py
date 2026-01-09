@@ -7,6 +7,7 @@ import bcrypt
 import secrets
 import os
 from dotenv import load_dotenv
+import eventlet
 eventlet.monkey_patch()
 load_dotenv()
 
