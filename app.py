@@ -7,7 +7,7 @@ import bcrypt
 import secrets
 import os
 from dotenv import load_dotenv
-
+eventlet.monkey_patch()
 load_dotenv()
 
 app = Flask(__name__)
