@@ -1,3 +1,5 @@
+gunicorn
+eventlet
 Flask==2.3.3
 Flask-PyMongo==2.3.0
 Flask-SocketIO==5.3.4
